@@ -1,8 +1,9 @@
-var express = require('express');
-var request = require('request');
-var bodyParser = require('body-parser')
-var app = express();
+"use strict";
+import express from 'express';
+import request from 'request'
+import bodyParser from 'body-parser'
 
+let app = express();
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
@@ -11,31 +12,33 @@ app.get('/', function (req, res) {
 });
 
 app.post('/getLocation', function (req, res) {
-    credentials = login();
-    getUserData(credentials)
+    login().then( (credentials)=>{
+        getUserData(credentials);
+    })
 });
 
 app.post('/updateLocation', function (req, res) {
-    credentials = login();
-    updateUserLocation(credentials)
-    res.send('in post');
+    login().then( (credentials)=>{
+        updateUserLocation(credentials);
+        res.send('in post');
+    })
 });
 
 function login() {
-    var authToken;
-    var userId;
-    request.post(
-        {
-            url: "http://localhost:3000/api/v1/login",
-            form: {user: "ido@webiks.com", password: "Mangosos1!"}
-        },
-        function (err, httpResponse, body) {
-            authToken = body.data.authToken;
-            userId = body.data.userId;
-            console.log(body);
-            updateUserLocation(authToken, userId)
-        });
-    return {authToken: authToken, userId: userId}
+    return new Promise ((resolve, reject) => {
+        request.post(
+            {
+                url: "http://localhost:3000/api/v1/login",
+                form: {user: "ido@webiks.com", password: "Mangosos1!"}
+            },
+            function (err, httpResponse, body) {
+                let credentials = {};
+                credentials.authToken = body.data.authToken;
+                credentials.userId = body.data.userId;
+                console.log(body);
+                resolve(credentials)
+            });
+    })
 }
 
 function getUserData(credentials, userId) {
