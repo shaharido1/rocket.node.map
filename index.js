@@ -21,10 +21,11 @@ app.post('/', function (req, res) {
              var authToken = body.data.authToken;
              var userId = body.data.userId;
              console.log(body)
+             updateUserLocation(authToken, userId)
          })
 });
 
-function updateUser(authToken, userId) {
+function updateUserLocation(authToken, userId) {
     request.post({
         url: "http://localhost:3000/api/v1/users.update",
         headers: {
