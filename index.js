@@ -8,6 +8,8 @@ app.get('/', function (req, res) {
 app.post('/', function (req, res) {
     res.send('in post');
     console.log("in post")
+    console.log("req")
+
 });
 app.listen(3000, function () {
     console.log('Example app listening on port 3000!')
