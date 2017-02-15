@@ -13,6 +13,7 @@ app.use(bodyParser.json());
 app.post('/getLocation', function (req, res) {
     console.log(req.body)
     login().then( function (credentials) {
+        console.log(credentials)
         getUserData(credentials);
     })
 });
@@ -33,10 +34,10 @@ function login() {
                 form: {user: "ido@webiks.com", password: "Mangosos1!"}
             },
             function (err, httpResponse, body) {
+                console.log(body);
                 var credentials = {};
                 credentials.authToken = body.data.authToken;
                 credentials.userId = body.data.userId;
-                console.log(body);
                 resolve(credentials)
             });
     })
