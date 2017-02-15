@@ -9,11 +9,11 @@ var Promise = require('promise')
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-const urlRocketMap = process.env.url || "localhost:3000";
-//const urlRocketMap = process.env.url || "http://54.202.112.224:3000"
-const portRocketMap = process.env.port || 8000
-const usernameRocketMap = process.env.username || "ido@webiks.com"
-const passwordRocketMap = process.env.password || "123456789"
+//const urlRocketMap = process.env.urlRocketMap || "localhost:3000";
+const urlRocketMap = process.env.urlRocketMap || "http://54.202.112.224:3000"
+const portRocketMap = process.env.portRocketMap || 8000
+const usernameRocketMap = process.env.usernameRocketMap || "ido@webiks.com"
+const passwordRocketMap = process.env.passwordRocketMap || "123456789"
 
 app.listen(portRocketMap, function () {
     login()
@@ -30,6 +30,7 @@ app.listen(portRocketMap, function () {
 
 function login() {
     console.log("trying to log in")
+    console.log(usernameRocketMap +passwordRocketMap)
     return new Promise((resolve, reject) => {
         var options = {
             url: urlRocketMap + "/api/v1/login",
@@ -38,12 +39,13 @@ function login() {
         }
         request(options, function (err, httpResponse, body) {
             var bodyParse = JSON.parse(body)
+            console.log(bodyParse)
             console.log("login is " + bodyParse.status)
-            console.log("credentials are - userID: " + bodyParse.data.userId + " authToken: " + bodyParse.data.authToken)
             if (bodyParse.status == "error") {
                 reject(err)
             }
             else {
+                console.log("credentials are - userID: " + bodyParse.data.userId + " authToken: " + bodyParse.data.authToken)
                 const credentials = {
                     authToken: bodyParse.data.authToken,
                     userId: bodyParse.data.userId
