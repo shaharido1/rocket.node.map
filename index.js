@@ -9,14 +9,13 @@ var Promise = require('promise')
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-//const url = process.env.url || "localhost:3000";
-const url = process.env.url || "http://54.202.112.224:3000"
-const port = process.env.port || 8000
-const username = process.env.username || "ido@webiks.com"
-const password = process.env.password || "123456789"
-const field = "name"
+const url = process.env.url || "localhost:3000";
+//const urlRocketMap = process.env.url || "http://54.202.112.224:3000"
+const portRocketMap = process.env.port || 8000
+const usernameRocketMap = process.env.username || "ido@webiks.com"
+const passwordRocketMap = process.env.password || "123456789"
 
-app.listen(port, function () {
+app.listen(portRocketMap, function () {
     login()
         .then((credentials) => {
             app.set('headers', {
@@ -24,7 +23,7 @@ app.listen(port, function () {
                 "X-User-Id": credentials.userId
             }
             )
-            console.log("app ready on " + port)
+            console.log("app ready on " + portRocketMap)
         }).catch((err) => { console.log("couldn't log in" + err) })
 });
 
@@ -33,9 +32,9 @@ function login() {
     console.log("trying to log in")
     return new Promise((resolve, reject) => {
         var options = {
-            url: url + "/api/v1/login",
+            url: urlRocketMap + "/api/v1/login",
             method: 'POST',
-            form: { user: username, password: password }
+            form: { user: usernameRocketMap, password: passwordRocketMap }
         }
         request(options, function (err, httpResponse, body) {
             var bodyParse = JSON.parse(body)
@@ -63,7 +62,7 @@ app.post('/addNewLocation', function (req, res) {
     console.log("trying to add location")
     const headers = Object.assign({}, req.app.get('headers'), { "Content-type": "application/json" })
     var options = {
-        url: url + "/api/v1/users.create",
+        url: urlRocketMap + "/api/v1/users.create",
         method: 'POST',
         headers: headers,
         form: {
@@ -85,7 +84,7 @@ app.post('/getLocation', function (req, res) {
     console.log("trying to get user data")
     if (!userId) { userId = credentials.userId }
     var options = {
-        url: url + "/api/v1/users.info?userId=" + userId,
+        url: urlRocketMap + "/api/v1/users.info?userId=" + userId,
         method: 'GET',
         headers: req.app.get('headers')
     }
@@ -106,7 +105,7 @@ app.post('/updateLocation', function (req, res) {
     const headers = Object.assign({}, req.app.get('headers'), { "Content-type": "application/json" })
     if (!userId) { userId = credentials.userId }
     var options = {
-        url: url + "/api/v1/users.update",
+        url: urlRocketMap + "/api/v1/users.update",
         method: 'POST',
         headers: headers,
         form: { userId: user_id, data: { customFields: { twitter: "locati" }, name: location } }
@@ -116,7 +115,6 @@ app.post('/updateLocation', function (req, res) {
         console.log(bodyParse)
     })
 });
-
 
 app.post('/getAllLocations', function (req, res) {
     var roomId;
@@ -131,7 +129,7 @@ function getUsersLocation(headers, allusers) {
     allusers.forEach((username) => {
         console.log(username)
         var options = {
-            url: url + "/api/v1/users.info?username=" + username,
+            url: urlRocketMap + "/api/v1/users.info?username=" + username,
             method: 'GET',
             headers: headers
         }
@@ -146,7 +144,7 @@ function getAllUsers(headers, roomId) {
     console.log("tyring to get all username")
     if (!roomId) { roomId = "GENERAL" }
     var options = {
-        url: url + "/api/v1/channels.info?roomId=" + roomId,
+        url: urlRocketMap + "/api/v1/channels.info?roomId=" + roomId,
         method: 'GET',
         headers: headers
     }
