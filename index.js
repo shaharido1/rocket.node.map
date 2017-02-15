@@ -1,78 +1,161 @@
 
 "use strict"
 
-var express = require ('express');
+var express = require('express');
 var request = require('request')
 var bodyParser = require('body-parser');
-var Promise = require ('promise')
+var Promise = require('promise')
 
 var app = express();
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+//const url = process.env.url || "localhost:3000";
+const url = process.env.url || "http://54.202.112.224:3000"
+const port = process.env.port || 8000
+const username = process.env.username || "ido@webiks.com"
+const password = process.env.password || "123456789"
+const field = "name"
 
-app.post('/getLocation', function (req, res) {
-    console.log(req.body)
-    login().then( function (credentials) {
-        console.log(credentials)
-        getUserData(credentials);
-    })
-});
-
-app.post('/updateLocation', function (req, res) {
-    console.log("update_location")
-    login().then( function (credentials) {
-        updateUserLocation(credentials);
-        res.send('in post');
-    })
-});
-
-function login() {
-    return new Promise ((resolve, reject) => {
-        request.post(
-            {
-                url: "http://localhost:3000/api/v1/login",
-                form: {user: "ido@webiks.com", password: "Mangosos1!"}
-            },
-            function (err, httpResponse, body) {
-                console.log(body);
-                var credentials = {
-                    authToken : "",
-                    userId  : ""
-                };
-                credentials.authToken = body.data.authToken;
-                credentials.userId = body.data.userId;
-                resolve(credentials)
-            });
-    })
-}
-
-function getUserData(credentials, userId) {
-    if (!userId) {userId=credentials.userId}
-    request
-        .get({
-            url: "http://localhost:3000/api/v1/users.info?userId=" + userId,
-            headers: {
+app.listen(port, function () {
+    login()
+        .then((credentials) => {
+            app.set('headers', {
                 "X-Auth-Token": credentials.authToken,
                 "X-User-Id": credentials.userId
             }
-        }).on('response', function (response) {
-            console.log(response.body)
-    })
-}
-
-function updateUserLocation(credentials, userId) {
-    if (!userId) {userId=credentials.userId}
-    request.post({
-        url: "http://localhost:3000/api/v1/users.update",
-        headers: {
-            "X-Auth-Token": credentials.authToken,
-            "X-User-Id": credentials.userId,
-            "Content-type": "application/json"
-        },
-        form: {userId: userId, data: {customFields: {location: "tel-aviv"}}}
-    })
-}
-
-app.listen(8000, function () {
-    console.log('Example app listening on port 8000!')
+            )
+            console.log("app ready on " + port)
+        }).catch((err) => { console.log("couldn't log in" + err) })
 });
+
+
+function login() {
+    console.log("trying to log in")
+    return new Promise((resolve, reject) => {
+        var options = {
+            url: url + "/api/v1/login",
+            method: 'POST',
+            form: { user: username, password: password }
+        }
+        request(options, function (err, httpResponse, body) {
+            var bodyParse = JSON.parse(body)
+            console.log("login is " + bodyParse.status)
+            console.log("credentials are - userID: " + bodyParse.data.userId + " authToken: " + bodyParse.data.authToken)
+            if (bodyParse.status == "error") {
+                reject(err)
+            }
+            else {
+                const credentials = {
+                    authToken: bodyParse.data.authToken,
+                    userId: bodyParse.data.userId
+                }
+                resolve(credentials)
+            }
+        });
+    })
+}
+
+app.get('/', function (req, res) {
+    res.send("hello rocket.map.app")
+})
+
+app.post('/addNewLocation', function (req, res) {
+    console.log("trying to add location")
+    const headers = Object.assign({}, req.app.get('headers'), { "Content-type": "application/json" })
+    var options = {
+        url: url + "/api/v1/users.create",
+        method: 'POST',
+        headers: headers,
+        form: {
+            name: "location",
+            email: "no2@email.com",
+            password: "123456789",
+            username: "locaiton2",
+            customFields: { "location": "tel-aviv" }
+        }
+
+    }
+    request(options, function (err, res, body) {
+        var bodyParse = JSON.parse(body)
+        console.log(bodyParse)
+    })
+});
+
+app.post('/getLocation', function (req, res) {
+    console.log("trying to get user data")
+    if (!userId) { userId = credentials.userId }
+    var options = {
+        url: url + "/api/v1/users.info?userId=" + userId,
+        method: 'GET',
+        headers: req.app.get('headers')
+    }
+    request(options, function (err, res, body) {
+        var bodyParse = JSON.parse(body)
+        console.log(bodyParse)
+    })
+})
+
+app.post('/updateLocation', function (req, res) {
+    var user_id = req.data.user_id
+    var text = req.data.text
+    var lng = str.substring(17, 25)
+    var lat = str.substring(20, 29)
+    console.log(text + lng +lat)
+    location = "lng=" + lng + "&lat=" + lat
+    console.log("update_location")
+    const headers = Object.assign({}, req.app.get('headers'), { "Content-type": "application/json" })
+    if (!userId) { userId = credentials.userId }
+    var options = {
+        url: url + "/api/v1/users.update",
+        method: 'POST',
+        headers: headers,
+        form: { userId: user_id, data: { customFields: { twitter: "locati" }, name: location } }
+    }
+    request(options, function (err, res, body) {
+        var bodyParse = JSON.parse(body)
+        console.log(bodyParse)
+    })
+});
+
+
+app.post('/getAllLocations', function (req, res) {
+    var roomId;
+    var headers = req.app.get('headers')
+    getAllUsers(headers, roomId).then(allusers => {
+        getUsersLocation(headers, allusers)
+    })
+});
+
+function getUsersLocation(headers, allusers) {
+    console.log("tyring to get all users locations")
+    allusers.forEach((username) => {
+        console.log(username)
+        var options = {
+            url: url + "/api/v1/users.info?username=" + username,
+            method: 'GET',
+            headers: headers
+        }
+        request(options, function (err, res, body) {
+            var bodyParse = JSON.parse(body)
+            console.log(body)
+        })
+    })
+}
+
+function getAllUsers(headers, roomId) {
+    console.log("tyring to get all username")
+    if (!roomId) { roomId = "GENERAL" }
+    var options = {
+        url: url + "/api/v1/channels.info?roomId=" + roomId,
+        method: 'GET',
+        headers: headers
+    }
+    return new Promise((resolve, reject) => {
+        request(options, function (err, res, body) {
+            var bodyParse = JSON.parse(body)
+            console.log(bodyParse)
+            resolve(bodyParse.channel.usernames)
+        })
+    })
+}
+
