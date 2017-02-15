@@ -1,24 +1,20 @@
-"use strict";
-import express from 'express';
-import request from 'request'
-import bodyParser from 'body-parser'
+var express = require ('express');
+var request = require('request')
+var bodyParser = require('body-parser');
+var Promise = require ('promise')
 
-let app = express();
+var app = express();
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
-app.get('/', function (req, res) {
-    res.send('Hello World!')
-});
-
 app.post('/getLocation', function (req, res) {
-    login().then( (credentials)=>{
+    login().then( function (credentials) {
         getUserData(credentials);
     })
 });
 
 app.post('/updateLocation', function (req, res) {
-    login().then( (credentials)=>{
+    login().then( function (credentials) {
         updateUserLocation(credentials);
         res.send('in post');
     })
