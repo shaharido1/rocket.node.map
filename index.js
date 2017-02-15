@@ -1,3 +1,6 @@
+
+"use strict"
+
 var express = require ('express');
 var request = require('request')
 var bodyParser = require('body-parser');
@@ -8,12 +11,14 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 app.post('/getLocation', function (req, res) {
+    console.log(req.body)
     login().then( function (credentials) {
         getUserData(credentials);
     })
 });
 
 app.post('/updateLocation', function (req, res) {
+    console.log("update_location")
     login().then( function (credentials) {
         updateUserLocation(credentials);
         res.send('in post');
@@ -28,7 +33,7 @@ function login() {
                 form: {user: "ido@webiks.com", password: "Mangosos1!"}
             },
             function (err, httpResponse, body) {
-                let credentials = {};
+                var credentials = {};
                 credentials.authToken = body.data.authToken;
                 credentials.userId = body.data.userId;
                 console.log(body);
