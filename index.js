@@ -9,7 +9,7 @@ var Promise = require('promise')
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-const url = process.env.url || "localhost:3000";
+const urlRocketMap = process.env.url || "localhost:3000";
 //const urlRocketMap = process.env.url || "http://54.202.112.224:3000"
 const portRocketMap = process.env.port || 8000
 const usernameRocketMap = process.env.username || "ido@webiks.com"
