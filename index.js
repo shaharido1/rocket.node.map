@@ -35,7 +35,10 @@ function login() {
             },
             function (err, httpResponse, body) {
                 console.log(body);
-                var credentials = {};
+                var credentials = {
+                    authToken : "",
+                    userId  : ""
+                };
                 credentials.authToken = body.data.authToken;
                 credentials.userId = body.data.userId;
                 resolve(credentials)
